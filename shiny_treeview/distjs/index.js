@@ -42982,7 +42982,8 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
     expanded,
     multiple,
     checkbox,
-    updateShinyValue
+    updateShinyValue,
+    updateExpandedValue
   }) {
     const [selectedItems, setSelectedItems] = import_react8.default.useState(selected);
     const [currentExpandedItems, setCurrentExpandedItems] = import_react8.default.useState(expanded);
@@ -43008,6 +43009,10 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
         },
         onExpandedItemsChange: (_event, itemIds) => {
           setCurrentExpandedItems(itemIds);
+          if (updateExpandedValue) {
+            const expandedValue = itemIds.length > 0 ? itemIds : null;
+            updateExpandedValue(expandedValue);
+          }
         },
         onSelectedItemsChange: (_event, itemIds) => {
           const normalizedIds = Array.isArray(itemIds) ? itemIds : itemIds ? [itemIds] : [];
@@ -43126,6 +43131,10 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
           this.boundElementValues.set(el, value);
           callback(allowDeferred || false);
         };
+        const updateExpandedValue = (value) => {
+          const expandedInputId = el.id + "_expanded";
+          window.Shiny.setInputValue(expandedInputId, value);
+        };
         const root = (0, import_client.createRoot)(el);
         this.boundElementRoots.set(el, root);
         root.render(import_react9.default.createElement(ShinyTreeView, {
@@ -43134,7 +43143,8 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
           expanded,
           multiple,
           checkbox,
-          updateShinyValue: updateValue
+          updateShinyValue: updateValue,
+          updateExpandedValue: updateExpandedValue
         }));
       }
       unsubscribe(el) {
