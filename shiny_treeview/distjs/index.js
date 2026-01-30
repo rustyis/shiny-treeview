@@ -42982,7 +42982,8 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
     expanded,
     multiple,
     checkbox,
-    updateShinyValue
+    updateShinyValue,
+    updateExpandedValue
   }) {
     const [selectedItems, setSelectedItems] = import_react8.default.useState(selected);
     const [currentExpandedItems, setCurrentExpandedItems] = import_react8.default.useState(expanded);
@@ -43008,6 +43009,10 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
         },
         onExpandedItemsChange: (_event, itemIds) => {
           setCurrentExpandedItems(itemIds);
+          if (updateExpandedValue) {
+            const expandedValue = itemIds.length > 0 ? itemIds : null;
+            updateExpandedValue(expandedValue, false);
+          }
         },
         onSelectedItemsChange: (_event, itemIds) => {
           const normalizedIds = Array.isArray(itemIds) ? itemIds : itemIds ? [itemIds] : [];
@@ -43126,6 +43131,14 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
           this.boundElementValues.set(el, value);
           callback(allowDeferred || false);
         };
+        const expandedBinding = window.Shiny.inputBindings.getBinding("shiny-treeview-expanded-binding");
+        const updateExpandedValue = (value, allowDeferred) => {
+          if (expandedBinding) {
+            expandedBinding.setValue(el, value);
+            const expandedInputId = expandedBinding.getId(el);
+            window.Shiny.setInputValue(expandedInputId, value);
+          }
+        };
         const root = (0, import_client.createRoot)(el);
         this.boundElementRoots.set(el, root);
         root.render(import_react9.default.createElement(ShinyTreeView, {
@@ -43134,7 +43147,8 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
           expanded,
           multiple,
           checkbox,
-          updateShinyValue: updateValue
+          updateShinyValue: updateValue,
+          updateExpandedValue: updateExpandedValue
         }));
       }
       unsubscribe(el) {
@@ -43146,6 +43160,31 @@ For example, \`@sm\` or \`@600\` or \`@40rem/sidebar\`.` : formatMuiErrorMessage
         this.boundElementValues.delete(el);
       }
     }
+    class ShinyTreeViewExpandedBinding extends window.Shiny.InputBinding {
+      constructor() {
+        super();
+        this.boundElementValues = new WeakMap();
+      }
+      find(scope) {
+        return scope.querySelectorAll(".shiny-treeview");
+      }
+      getId(el) {
+        return el.id + "_expanded";
+      }
+      getValue(el) {
+        return this.boundElementValues.get(el) ?? null;
+      }
+      setValue(el, value) {
+        this.boundElementValues.set(el, value);
+      }
+      subscribe(el, callback) {
+        // Updated by React component
+      }
+      unsubscribe(el) {
+        this.boundElementValues.delete(el);
+      }
+    }
+    window.Shiny.inputBindings.register(new ShinyTreeViewExpandedBinding(), "shiny-treeview-expanded-binding");
     window.Shiny.inputBindings.register(new ShinyTreeViewBinding(), "shiny-treeview-binding");
   }
 })();
